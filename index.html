@@ -1,32 +1,102 @@
 <html>
+<!--  
+Mash Efficiency and Plato to SG calculator
+Evan Kendrick 2023
+    -->
 
 <body>
-    <h1>Mash Efficiency Calculator</h1>
-    
-        <label>Specific Gravity</label>
-        <input step=any type="number" id="SG">
-        <label>Kettle Full Volume (Gallons)</label>
-        <input step=any type="number" id="Volume">
-        <label>Mash Weight (Pounds)</label>
-        <input step=any type="number" id="Weight">
-        <button onclick="submit()">run</button>
-    
-    <h1 id="output"></h1>
+    <header>
+        <h1>Mash Efficiency Calculator</h1> <br><br>
+    </header>
+    <label><strong>Plato</strong></label>
+    <input step=any type=number id="P">
+    <button onclick="convert()">Convert to SG</button>
+    <label><strong>Specific Gravity</strong></label>
+    <input step=any type="number" id="SG">
+    <label><strong>Full Volume (gal)</strong></label>
+    <input step=any type="number" id="Volume">
+    <br>
+    <br>
+    <div style="display: none;" id="maltinput" class="maltinput">
+        <label><strong>Weight (lb)</strong></label>
+        <input step=any type="number" class="weight">
+        <label for="malt"><strong>Choose your malt:</strong></label>
+        <select class="malt">
+            <option value=37>Rahr Standard 2 Row Silo</option>
+            <option value=39>Briess Red Wheat</option>
+            <option value=35>Briess Red Wheat Flakes</option>
+            <option value=37>MMH Oat Flakes</option>
+            <option value=32>MMH Barley Flakes</option>
+            <option value=36>MMH Pilsen</option>
+            <option value=30>Weyermann Acidulated</option>
+            <option value=38>Weyermann Vienna</option>
+            <option value=35>Briess Crystal 20L</option>
+            <option value=34>Briess Crystal 40L</option>
+            <option value=33>Briess Crystal 120L</option>
+            <option value=34>Fawcett Chocolate</option>
+            <option value=25>Fawcett Roast Barley</option>
+            <option value=32>Simpson's Brown</option>
+            <option value=32>Crisp Pale Chocolate</option>
+            <option value=34>Crisp Chocolate</option>
+            <!--<option value=rahr2rowPPG>Simpson's Chocolate</option>
+        <option value=rahr2rowPPG>Simpson's Chocolate</option>
+        <option value=rahr2rowPPG>Simpson's Chocolate</option>
+        NEED TO REVIEW MAXPPG VALUES AFTER ACHIEVING FUNCTIONALITY
+        -->
+        </select>
+    </div>
+    <br>
+    <button onclick="addmalt()">Additional Malt</button>
+    <button onclick="submit()">Calculate Efficiency</button>
+
+    <h2 id="preBoilEff"></h2>
     <script>
-        
-        const maxPPG = 37;
-        const outputElement = document.getElementById('output');
-        
+
+        // Plato to SG converter
+        function convert() {
+
+            const p = parseFloat(document.getElementById('P').value);
+            const sg = 259 / (259 - p);
+            document.getElementById('SG').value = sg.toPrecision(4);
+        }
+
+        // Addmalt button functionality
+        function addmalt() {
+            const node = document.getElementById("maltinput");
+            const clone = node.cloneNode(true);
+            clone.style.display = "block";
+            clone.id = ""
+            document.body.appendChild(clone);
+
+        }
+
+
+        const rahr2rowPPG = 37;
+        const outputEff = document.getElementById('preBoilEff');
+        // function to extract appropriate maxPPG value
+        // for desired grain input
+        function extractValue(input) {
+            const weight = input.getElementsByClassName("weight")[0].value;
+            const og = input.getElementsByClassName('malt')[0].value;
+            return weight*og;
+        }
+        // Mash Efficiency Calculator
         function submit() {
-            
-            const sg = parseFloat( document.getElementById('SG').value);
+            const inputs = document.getElementsByClassName('maltinput');
+            let sum = 0;
+            for (const input of inputs) {
+                const value = extractValue(input);
+                if (value)
+                    sum = sum + value;
+            };
+            const sg = parseFloat(document.getElementById('SG').value);
             const volume = parseFloat(document.getElementById('Volume').value);
-            const weight = parseFloat(document.getElementById('Weight').value);
-            const potentialpoints = weight * maxPPG / volume;
+            
+            const potentialpoints = sum / volume;
             const measuredpoints = ((sg - 1) * 1000);
             const eta = (measuredpoints / potentialpoints) * 100;
 
-            outputElement.innerText = eta;
+            outputEff.innerText = eta.toPrecision(3) + "%";
         }
 
     </script>
